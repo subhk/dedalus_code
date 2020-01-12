@@ -32,17 +32,11 @@ kx_global = np.linspace(2., 2., 1)
 z_basis = de.Chebyshev('z', Nr, interval=(-1., 1.))
 domain = de.Domain([z_basis], grid_dtype=np.complex128) #, comm=MPI.COMM_SELF)
 
-#r_basis = de.Chebyshev('r', Nr, interval=(0., 4.)) #, dealias=3/2)
-#domain = de.Domain([r_basis], grid_dtype=np.complex128) #, comm=MPI.COMM_SELF)
 
-# 2D Boussinesq hydrodynamics, with no-slip boundary conditions
 # Use substitutions for x and t derivatives
 problem = de.EVP(domain, variables=['u', 'w', 'h', 'uz', 'wz', 'hz'], eigenvalue='omega', tolerance=1e-16)
-#problem = de.EVP(domain, variables=['u', 'w', 'h', 'uz', 'hz'], eigenvalue='omega', tolerance=1e-10)
 problem.meta[:]['z']['dirichlet'] = True
 
-#problem = de.EVP(domain, variables=['u', 'w', 'h','ur', 'wr', 'hr'], eigenvalue='omega')
-#problem.meta[:]['r']['dirichlet'] = True
 
 problem.parameters['kx'] = 1
 problem.parameters['L'] = L = 1.
@@ -79,13 +73,6 @@ H['g'] = integrate.cumtrapz( Hr['g'], r0['g'], initial=0. )
 max_ = np.max(H['g'])
 H['g'] = 1. + H['g'] - max_
 problem.parameters['H'] = H
-
-#sio.savemat( 'z.mat', {'z':z} )
-sio.savemat( 'reig.mat', {'reig':r0['g']} )
-#sio.savemat( 'h.mat', {'h0':H['g']} )
-#sio.savemat( 'v.mat', {'v':V['g']} )
-#sio.savemat( 'vr.mat', {'vr':Vr['g']} )
-#sio.savemat( 'hr.mat', {'hr':Hr['g']} )
 
 problem.substitutions['dx(A)'] = "1j*kx*A"
 problem.substitutions['dt(A)'] = "-1j*omega*A"
@@ -166,9 +153,6 @@ u = solver.state['u']
 w = solver.state['w']
 h = solver.state['h']
 
-#u['g'] = u['g']/1j
-#h['g'] = h['g']/1j 
-
 phase = np.arctan(u['g'].imag/u['g'].real)
 phase = np.sum(phase*np.abs(u['g'])) / np.sum(np.abs(u['g']))
 u['g'] *= np.exp(-1j*phase)
@@ -184,8 +168,6 @@ h['g'] *= np.exp(-1j*phase)
 #h['g'] /= np.max(np.abs(h['g']))
 #w['g'] /= np.max(np.abs(w['g']))
 #u['g'] /= np.max(np.abs(u['g']))
-
-#sio.savemat( 'v_pertub.mat', {'vp':w['g']} )
 
 fig = plt.figure(figsize=(15,10))
 ax1 = plt.subplot(311)
